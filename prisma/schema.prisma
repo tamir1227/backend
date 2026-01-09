@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  password String
+  tickets  Ticket[]
+}
+
+model Ticket {
+  id        Int      @id @default(autoincrement())
+  title     String   // Хүсэлтийн гарчиг
+  content   String   // Хүсэлтийн утга
+  reply     String?  // Админы хариулт (Эхлээд хоосон байна)
+  status    String   @default("OPEN") // Төлөв: OPEN (нээлттэй) эсвэл CLOSED (хаагдсан)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
