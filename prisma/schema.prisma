@@ -3,24 +3,37 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  password String
-  tickets  Ticket[]
+model Comment {
+  id       Int      @id @default(autoincrement())
+  text     String
+  cdate    DateTime @default(now())
+  ticketId Int
+  userId   Int
+  Ticket   Ticket   @relation(fields: [ticketId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comment_ticket_fk")
+  User     User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "comment_user_fk")
 }
 
 model Ticket {
-  id        Int      @id @default(autoincrement())
-  title     String   // Хүсэлтийн гарчиг
-  content   String   // Хүсэлтийн утга
-  reply     String?  // Админы хариулт (Эхлээд хоосон байна)
-  status    String   @default("OPEN") // Төлөв: OPEN (нээлттэй) эсвэл CLOSED (хаагдсан)
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  status      String    @default("OPEN")
+  userId      Int
+  cdate       DateTime  @default(now())
+  Comment     Comment[]
+  User        User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "ticket_user_fk")
+}
+
+model User {
+  id       Int       @id(map: "user_pk") @unique(map: "user_unique") @default(autoincrement())
+  name     String?   @db.VarChar
+  image    String?
+  password String?
+  cdate    DateTime? @default(now()) @db.Timestamptz(6)
+  Comment  Comment[]
+  Ticket   Ticket[]
 }
